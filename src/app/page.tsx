@@ -81,13 +81,13 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   <Button size="lg" asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
-                    <Link href="/signup">
+                    <Link href="/login">
                       Find a Project
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                   <Button size="lg" variant="outline" asChild>
-                    <Link href="/signup">
+                    <Link href="/company/login">
                       Post a Job
                     </Link>
                   </Button>
