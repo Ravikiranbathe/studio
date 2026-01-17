@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -81,11 +82,16 @@ export default function SignupPage() {
 
         // The useEffect will handle the redirect.
     } catch(error: any) {
-        console.error("Signup error:", error);
+        let description = "Could not create your account.";
+        if (error.code === 'auth/email-already-in-use') {
+          description = "An account with this email already exists. Please log in instead.";
+        } else {
+          description = error.message || description;
+        }
         toast({
             variant: "destructive",
-            title: "Uh oh! Something went wrong.",
-            description: error.message || "Could not create your account.",
+            title: "Sign Up Failed",
+            description: description,
         });
     } finally {
       setIsLoading(false);
