@@ -13,16 +13,18 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, useFirestore } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function CompanyLoginPage() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
@@ -35,17 +37,36 @@ export default function CompanyLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth) return;
+    if (!auth || !firestore) return;
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect will handle redirection
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      const userDocRef = doc(firestore, "users", firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists() && userDoc.data().role === 'company') {
+         // Login successful, useEffect will redirect.
+      } else {
+        await auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "This is not a company account. Please log in on the developer portal.",
+        });
+      }
     } catch (error: any) {
-      console.error("Login error:", error);
+      let description = "An unexpected error occurred.";
+      if (error.code === 'auth/invalid-credential') {
+        description = "Invalid email or password. Please try again.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Log In Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsLoading(false);
