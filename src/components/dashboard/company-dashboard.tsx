@@ -59,18 +59,6 @@ export default function CompanyDashboard() {
   const [applications, setApplications] = useState<WithId<Application>[]>([]);
   const [applicationsLoading, setApplicationsLoading] = useState(true);
 
-  const { data: usersData, isLoading: usersLoading } = useCollection(
-    useMemoFirebase(() => (firestore ? collection(firestore, 'users') : null), [firestore])
-  );
-
-  const userMap = useMemo(() => {
-    if (!usersData) return new Map();
-    return usersData.reduce((acc, u) => {
-      acc.set(u.id, u);
-      return acc;
-    }, new Map());
-  }, [usersData]);
-
   useEffect(() => {
     if (!projects || projectsLoading || !firestore) {
       if(!projectsLoading) setApplicationsLoading(false);
@@ -87,10 +75,22 @@ export default function CompanyDashboard() {
 
     const unsubscribers = projects.map((project) => {
       const q = collection(firestore, `projects/${project.id}/applications`);
-      return onSnapshot(q, (snapshot) => {
-        const projectApplications = snapshot.docs.map((d) => {
+      return onSnapshot(q, async (snapshot) => {
+        const projectApplications = await Promise.all(snapshot.docs.map(async (d) => {
             const appData = d.data() as Application;
-            const developer = userMap.get(appData.developerId);
+            
+            let developerName = 'Unknown';
+            if (appData.developerId) {
+                const userDocRef = doc(firestore, 'users', appData.developerId);
+                try {
+                    const userDoc = await getDoc(userDocRef);
+                    if (userDoc.exists()) {
+                        developerName = userDoc.data().name;
+                    }
+                } catch(e) {
+                    console.error("Error fetching developer profile:", e);
+                }
+            }
             const devAvatar = placeHolderImages.find(p => p.id === 'dev-avatar-1')?.imageUrl || '';
 
             return {
@@ -98,11 +98,11 @@ export default function CompanyDashboard() {
                 id: d.id,
                 projectId: project.id,
                 projectName: project.title,
-                developerName: developer ? developer.name : 'Unknown',
+                developerName: developerName,
                 developerAvatar: devAvatar, // Using a placeholder for now
                 submittedAt: appData.submittedAt ? new Date(appData.submittedAt).toISOString() : new Date().toISOString(),
             }
-        });
+        }));
 
         setApplications((currentApps) => {
           const otherApps = currentApps.filter(
@@ -122,7 +122,7 @@ export default function CompanyDashboard() {
     return () => {
       unsubscribers.forEach((unsub) => unsub());
     };
-  }, [projects, firestore, projectsLoading, userMap]);
+  }, [projects, firestore, projectsLoading]);
 
   const isLoading = projectsLoading || isUserLoading || applicationsLoading;
 

@@ -12,7 +12,7 @@ service cloud.firestore {
      * This hierarchical structure helps establish clear ownership and access control boundaries.
      *
      * Key Security Decisions:
-     * - User profiles are private and can only be created and modified by their owner. User listing is disabled.
+     * - User profiles are readable by any signed-in user, but can only be created and modified by their owner. User listing is disabled to prevent data scraping.
      * - Projects are public-read to allow developers to browse opportunities, but all write operations are restricted to the owning company.
      * - Access to subcollections like `applications` and `messages` requires checking ownership of the parent `project` document, ensuring context-aware security.
      * - The `/applications/{applicationId}/submissions/{submissionId}` path specified in the data model is structurally detached from its authorization context (the project). To prevent security vulnerabilities, this path is completely locked down. It should be nested under a project path to be securable.
@@ -69,12 +69,12 @@ service cloud.firestore {
      * @description Controls access to user profile documents.
      * @path /users/{userId}
      * @allow (create) An authenticated user creating their own user profile document for the first time.
-     * @deny (get) An unauthenticated user trying to read another user's profile.
+     * @allow (get) An authenticated user reading any user's profile.
      * @deny (list) Any user trying to list all user documents.
-     * @principle Restricts access to a user's own data tree. Only the owner of a user document can read or write to it.
+     * @principle Restricts access to a user's own data tree for writes, but allows reads for discoverability.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isSignedIn();
       allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
