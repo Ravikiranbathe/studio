@@ -17,15 +17,24 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, Briefcase, Users } from "lucide-react"
+import { ArrowUpRight, Briefcase, MoreHorizontal, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useUser, useFirestore, useCollection, useMemoFirebase, WithId } from '@/firebase';
-import { collection, query, where, onSnapshot, getDoc, doc, getDocs, DocumentData } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, WithId, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { collection, query, where, onSnapshot, getDocs, DocumentData, doc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { placeHolderImages } from '@/lib/placeholder-images';
+import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface Project extends DocumentData {
   id: string;
@@ -49,6 +58,7 @@ interface Application extends DocumentData {
 export default function CompanyDashboard() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const projectsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -88,7 +98,7 @@ export default function CompanyDashboard() {
                 projectId: project.id,
                 projectName: project.title,
                 developerName: developerName,
-                developerAvatar: devAvatar, // Using a placeholder for now
+                developerAvatar: devAvatar,
                 submittedAt: appData.submittedAt ? new Date(appData.submittedAt).toISOString() : new Date().toISOString(),
             }
         }));
@@ -112,6 +122,26 @@ export default function CompanyDashboard() {
       unsubscribers.forEach((unsub) => unsub());
     };
   }, [projects, firestore, projectsLoading]);
+
+  const handleStatusChange = (projectId: string, applicationId: string, status: string) => {
+    if (!firestore) return;
+    const applicationRef = doc(firestore, `projects/${projectId}/applications`, applicationId);
+    updateDoc(applicationRef, { status })
+      .then(() => {
+        toast({
+          title: "Status Updated",
+          description: `Applicant's status has been changed to ${status}.`,
+        });
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+            path: applicationRef.path,
+            operation: 'update',
+            requestResourceData: { status },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
 
   const isLoading = projectsLoading || isUserLoading || applicationsLoading;
 
@@ -229,7 +259,10 @@ export default function CompanyDashboard() {
                 <TableRow>
                   <TableHead>Applicant</TableHead>
                   <TableHead className="hidden sm:table-cell">Status</TableHead>
-                  <TableHead className="text-right">Submitted</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Submitted</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -249,12 +282,39 @@ export default function CompanyDashboard() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <Badge variant={
-                        proposal.status === "Contacted" ? "default" :
-                        proposal.status === "In Review" ? "secondary" : "outline"
+                        proposal.status === 'Accepted' ? 'default' :
+                        proposal.status === 'Shortlisted' ? 'default' :
+                        proposal.status === 'In Review' ? 'secondary' :
+                        proposal.status === 'Waitlisted' ? 'secondary' :
+                        proposal.status === 'Rejected' ? 'destructive' :
+                        'outline'
                       }>{proposal.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="hidden md:table-cell text-right">
                       {formatDistanceToNow(new Date(proposal.submittedAt), { addSuffix: true })}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onSelect={() => handleStatusChange(proposal.projectId, proposal.id, 'In Review')}>In Review</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleStatusChange(proposal.projectId, proposal.id, 'Shortlisted')}>Shortlist</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleStatusChange(proposal.projectId, proposal.id, 'Waitlisted')}>Waitlist</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onSelect={() => handleStatusChange(proposal.projectId, proposal.id, 'Accepted')}>Accept</DropdownMenuItem>
+                          <DropdownMenuItem onSelect={() => handleStatusChange(proposal.projectId, proposal.id, 'Rejected')} className="text-red-500">Reject</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

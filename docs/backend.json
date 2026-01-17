@@ -147,8 +147,15 @@
         },
         "status": {
           "type": "string",
-          "description": "The status of the application (e.g., applied, shortlisted, rejected).",
-          "format": "string"
+          "description": "The status of the application.",
+          "enum": [
+            "Submitted",
+            "In Review",
+            "Shortlisted",
+            "Waitlisted",
+            "Accepted",
+            "Rejected"
+          ]
         },
         "submittedAt": {
           "type": "string",
