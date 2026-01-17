@@ -117,6 +117,30 @@
           "type": "string",
           "description": "Reference to Developer. (Relationship: Developer 1:N Application)"
         },
+        "developerName": {
+          "type": "string",
+          "description": "The name of the developer applying."
+        },
+        "developerEmail": {
+          "type": "string",
+          "description": "The email of the developer applying.",
+          "format": "email"
+        },
+        "resumeUrl": {
+          "type": "string",
+          "description": "URL to the developer's resume.",
+          "format": "uri"
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "description": "URL to the developer's LinkedIn profile.",
+          "format": "uri"
+        },
+        "githubUrl": {
+          "type": "string",
+          "description": "URL to the developer's GitHub profile.",
+          "format": "uri"
+        },
         "proposalText": {
           "type": "string",
           "description": "The developer's proposal text for the project."
@@ -125,14 +149,23 @@
           "type": "string",
           "description": "The status of the application (e.g., applied, shortlisted, rejected).",
           "format": "string"
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the application was submitted.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "projectId",
         "developerId",
+        "developerName",
+        "developerEmail",
+        "resumeUrl",
         "proposalText",
-        "status"
+        "status",
+        "submittedAt"
       ]
     },
     "Submission": {

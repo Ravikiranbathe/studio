@@ -79,18 +79,7 @@ export default function CompanyDashboard() {
         const projectApplications = await Promise.all(snapshot.docs.map(async (d) => {
             const appData = d.data() as Application;
             
-            let developerName = 'Unknown';
-            if (appData.developerId) {
-                const userDocRef = doc(firestore, 'users', appData.developerId);
-                try {
-                    const userDoc = await getDoc(userDocRef);
-                    if (userDoc.exists()) {
-                        developerName = userDoc.data().name;
-                    }
-                } catch(e) {
-                    console.error("Error fetching developer profile:", e);
-                }
-            }
+            const developerName = appData.developerName || 'Unknown';
             const devAvatar = placeHolderImages.find(p => p.id === 'dev-avatar-1')?.imageUrl || '';
 
             return {

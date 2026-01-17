@@ -14,6 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
@@ -27,6 +28,11 @@ import { Sparkles } from "lucide-react"
 import { generateProposal } from "@/ai/ai-proposal-generator"
 
 const applicationFormSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  resumeUrl: z.string().url({ message: "Please enter a valid URL for your resume." }),
+  linkedinUrl: z.string().url({ message: "Please enter a valid LinkedIn URL." }).optional().or(z.literal('')),
+  githubUrl: z.string().url({ message: "Please enter a valid GitHub URL." }).optional().or(z.literal('')),
   proposal: z.string().min(100, {
     message: "Proposal must be at least 100 characters.",
   }),
@@ -51,9 +57,28 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
   const form = useForm<ApplicationFormValues>({
     resolver: zodResolver(applicationFormSchema),
     defaultValues: {
+      name: user?.displayName || "",
+      email: user?.email || "",
+      resumeUrl: "",
+      linkedinUrl: "",
+      githubUrl: "",
       proposal: "",
     },
   });
+
+  React.useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.displayName || "",
+        email: user.email || "",
+        resumeUrl: "",
+        linkedinUrl: "",
+        githubUrl: "",
+        proposal: "",
+      });
+    }
+  }, [user, form]);
+
 
   const handleGenerateProposal = async () => {
     if (!project) return;
@@ -99,6 +124,11 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
     const applicationData = {
       projectId: project.id,
       developerId: user.uid,
+      developerName: data.name,
+      developerEmail: data.email,
+      resumeUrl: data.resumeUrl,
+      linkedinUrl: data.linkedinUrl || '',
+      githubUrl: data.githubUrl || '',
       proposalText: data.proposal,
       status: "Submitted",
       submittedAt: new Date().toISOString(),
@@ -204,6 +234,79 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
         <CardContent>
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                 <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="John Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="you@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                <FormField
+                    control={form.control}
+                    name="resumeUrl"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Resume/CV Link</FormLabel>
+                        <FormControl>
+                            <Input placeholder="https://example.com/my-resume.pdf" {...field} />
+                        </FormControl>
+                        <FormDescription>
+                            Link to your online resume (e.g., Google Drive, Dropbox, personal site).
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="linkedinUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>LinkedIn Profile <span className="text-muted-foreground">(Optional)</span></FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://linkedin.com/in/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="githubUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>GitHub Profile <span className="text-muted-foreground">(Optional)</span></FormLabel>
+                            <FormControl>
+                                <Input placeholder="https://github.com/yourusername" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <FormField
                 control={form.control}
                 name="proposal"
