@@ -1,0 +1,370 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CollabHub platform, either a company representative or a developer/designer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role: 'company' or 'developer'.",
+          "format": "string"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "skills": {
+          "type": "string",
+          "description": "A comma separated list of the user's skills."
+        },
+        "portfolioUrl": {
+          "type": "string",
+          "description": "URL to the user's portfolio.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the user was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "name",
+        "email",
+        "createdAt"
+      ]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a project posted by a company on the CollabHub platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the project entity."
+        },
+        "companyId": {
+          "type": "string",
+          "description": "Reference to Company. (Relationship: Company 1:N Project)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the project."
+        },
+        "techStack": {
+          "type": "string",
+          "description": "The technologies required for the project."
+        },
+        "budget": {
+          "type": "number",
+          "description": "The budget allocated for the project."
+        },
+        "deadline": {
+          "type": "string",
+          "description": "The deadline for the project completion.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the project (e.g., open, in progress, completed).",
+          "format": "string"
+        }
+      },
+      "required": [
+        "id",
+        "companyId",
+        "title",
+        "description",
+        "techStack",
+        "budget",
+        "deadline",
+        "status"
+      ]
+    },
+    "Application": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Application",
+      "type": "object",
+      "description": "Represents a developer's application to a project.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the application entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Application)"
+        },
+        "developerId": {
+          "type": "string",
+          "description": "Reference to Developer. (Relationship: Developer 1:N Application)"
+        },
+        "proposalText": {
+          "type": "string",
+          "description": "The developer's proposal text for the project."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the application (e.g., applied, shortlisted, rejected).",
+          "format": "string"
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "developerId",
+        "proposalText",
+        "status"
+      ]
+    },
+    "Submission": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Submission",
+      "type": "object",
+      "description": "Represents a design/prototype submission by a developer for a project.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the submission entity."
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "Reference to Application. (Relationship: Application 1:N Submission)"
+        },
+        "figmaLink": {
+          "type": "string",
+          "description": "Link to the Figma design/prototype."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL to the uploaded design/prototype file."
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Timestamp of when the submission was made.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "applicationId",
+        "submittedAt"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Represents a payment made to a user for a project.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the payment entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Payment)"
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Payment)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the payment."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of payment (e.g., full payment, participation compensation).",
+          "format": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the payment was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "projectId",
+        "amount",
+        "type",
+        "createdAt"
+      ]
+    },
+    "Message": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Message",
+      "type": "object",
+      "description": "Represents a message within a project's chat system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the message entity."
+        },
+        "projectId": {
+          "type": "string",
+          "description": "Reference to Project. (Relationship: Project 1:N Message)"
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Reference to User (sender). (Relationship: User 1:N Message)"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the message was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "senderId",
+        "message",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Uses path-based ownership for private user data. The `userId` parameter identifies the user document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores project postings created by companies. The `companyId` field determines ownership and access. Includes project details such as title, description, tech stack, budget, and deadline.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/applications/{applicationId}",
+        "definition": {
+          "entityName": "Application",
+          "schema": {
+            "$ref": "#/backend/entities/Application"
+          },
+          "description": "Stores applications submitted by developers for a specific project. The `projectId` and `developerId` fields determine access. Includes denormalized 'companyId' from the parent project for authorization independence. Includes proposal text and application status.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            },
+            {
+              "name": "applicationId",
+              "description": "The unique identifier for the application."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/applications/{applicationId}/submissions/{submissionId}",
+        "definition": {
+          "entityName": "Submission",
+          "schema": {
+            "$ref": "#/backend/entities/Submission"
+          },
+          "description": "Stores design/prototype submissions by developers for a project application. The `applicationId` field determines the parent application. Includes Figma link, file URL, and submission timestamp.",
+          "params": [
+            {
+              "name": "applicationId",
+              "description": "The unique identifier for the application."
+            },
+            {
+              "name": "submissionId",
+              "description": "The unique identifier for the submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": {
+            "$ref": "#/backend/entities/Payment"
+          },
+          "description": "Stores payment records for developers and projects. Includes `userId`, `projectId`, amount, type, and timestamp.",
+          "params": [
+            {
+              "name": "paymentId",
+              "description": "The unique identifier for the payment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/projects/{projectId}/messages/{messageId}",
+        "definition": {
+          "entityName": "Message",
+          "schema": {
+            "$ref": "#/backend/entities/Message"
+          },
+          "description": "Stores messages within a project's chat system.  Includes `projectId`, `senderId`, message content, and timestamp.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the message."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the CollabHub application, connecting companies with developers and designers. It prioritizes security, scalability, and ease of debugging by adhering to the core design principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and Rules are Not Filters. The structure uses denormalization to avoid hierarchical authorization dependencies, ensuring atomic operations and simplified security rules.  It implements structural segregation, grouping documents with similar access requirements into distinct collections. Access control is modeled consistently using path-based ownership and membership maps where appropriate. The structure facilitates list operations by avoiding the need for filtering within security rules. Invariants such as ownership and timestamps are enforced through data validation within the rules.\n\n**Authorization Independence:** Denormalization is extensively used.  For example, the `applications` subcollection within projects includes denormalized data (potentially the company ID and project status).  This eliminates the need for `get()` calls in the security rules to determine access based on the project's attributes.\n\n**QAPs (Rules are not Filters):** The data segregation ensures that listing operations are secure. For example, listing projects only returns projects a company is authorized to view or manage, based on the user's role and the project's `companyId`."
+  }
+}

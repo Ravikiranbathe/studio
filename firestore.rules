@@ -1,0 +1,188 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * Core Philosophy: This ruleset enforces a security model based on user roles and data ownership.
+     * Public data (like projects) is readable by anyone to facilitate platform discovery, but writable only by its owner.
+     * Private user data (like profiles and payments) is strictly controlled, accessible only to the user concerned and relevant parties (e.g., a company paying a user).
+     * Collaborative data (like applications and messages) is accessible to the direct participants, such as the company that owns a project and the developer who applies to it.
+     *
+     * Data Structure: The data is organized into top-level collections for primary entities (`users`, `projects`, `payments`) and nested subcollections for related data (`applications`, `messages`).
+     * This hierarchical structure helps establish clear ownership and access control boundaries.
+     *
+     * Key Security Decisions:
+     * - User profiles are private and can only be created and modified by their owner. User listing is disabled.
+     * - Projects are public-read to allow developers to browse opportunities, but all write operations are restricted to the owning company.
+     * - Access to subcollections like `applications` and `messages` requires checking ownership of the parent `project` document, ensuring context-aware security.
+     * - The `/applications/{applicationId}/submissions/{submissionId}` path specified in the data model is structurally detached from its authorization context (the project). To prevent security vulnerabilities, this path is completely locked down. It should be nested under a project path to be securable.
+     * - Sensitive collections like `payments` cannot be listed by clients.
+     *
+     * Denormalization for Authorization: The security model relies on ownership fields (e.g., `companyId`, `developerId`, `userId`) being present on documents.
+     * In several cases (applications, payments, messages), the rules must perform a `get()` call to a parent project document to verify the company's identity. For improved performance at scale, it's recommended to denormalize the `companyId` from the project directly onto these child documents.
+     *
+     * Structural Segregation: The use of distinct top-level collections for different data types (e.g., `/users`, `/projects`) provides a clear and secure separation of concerns, simplifying list operations and preventing data leakage.
+     */
+
+    // --------------------------------------------------------------------------
+    // Helper Functions
+    // --------------------------------------------------------------------------
+
+    /**
+     * Checks if the currently authenticated user is the owner of a resource.
+     * @param userId The UID of the user to check against.
+     */
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the currently authenticated user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user is the owner of an existing document.
+     * Used for safe update and delete operations.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Checks if the requesting user is the owner of the specified project.
+     * This requires reading the project document to check its `companyId`.
+     * @param projectId The ID of the project document to check.
+     */
+    function isProjectOwner(projectId) {
+      let projectData = get(/databases/$(database)/documents/projects/$(projectId)).data;
+      return isSignedIn() && projectData.companyId == request.auth.uid;
+    }
+
+    // --------------------------------------------------------------------------
+    // Collection: users
+    // --------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own user profile document for the first time.
+     * @deny (get) An unauthenticated user trying to read another user's profile.
+     * @deny (list) Any user trying to list all user documents.
+     * @principle Restricts access to a user's own data tree. Only the owner of a user document can read or write to it.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    // --------------------------------------------------------------------------
+    // Collection: projects
+    // --------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to project documents. Projects are public to view but can only be modified by the owning company.
+     * @path /projects/{projectId}
+     * @allow (list) Any user, including unauthenticated ones, listing all available projects.
+     * @allow (create) An authenticated user creating a new project, setting themselves as the `companyId`.
+     * @deny (update) A user trying to update a project they do not own.
+     * @principle Implements a "Public Read, Owner-Only Write" pattern, essential for a marketplace-style platform.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.companyId == request.auth.uid;
+      allow update: if isProjectOwner(projectId) && resource != null;
+      allow delete: if isProjectOwner(projectId) && resource != null;
+
+      // --------------------------------------------------------------------------
+      // Subcollection: applications
+      // --------------------------------------------------------------------------
+
+      /**
+       * @description Controls access to project applications. Visible only to the project owner and the applying developer.
+       * @path /projects/{projectId}/applications/{applicationId}
+       * @allow (get) The developer who created the application reading their submission.
+       * @allow (get) The company that owns the project reading an application for that project.
+       * @deny (get) A random developer trying to read another developer's application.
+       * @deny (list) A developer trying to list all applications for a project.
+       * @principle Enforces shared access between a resource owner (company) and a related user (developer).
+       */
+      match /applications/{applicationId} {
+        allow get: if isProjectOwner(projectId) || isOwner(resource.data.developerId);
+        allow list: if isProjectOwner(projectId);
+        allow create: if isSignedIn() && request.resource.data.developerId == request.auth.uid;
+        allow update: if isProjectOwner(projectId) && resource != null;
+        allow delete: if isProjectOwner(projectId) && resource != null;
+      }
+
+      // --------------------------------------------------------------------------
+      // Subcollection: messages
+      // --------------------------------------------------------------------------
+
+      /**
+       * @description Controls access to messages within a project's chat.
+       * @path /projects/{projectId}/messages/{messageId}
+       * @allow (get) The project owner reading any message in their project.
+       * @allow (get) The sender of a message reading their own message.
+       * @allow (create) An authenticated user sending a message in a project chat.
+       * @deny (list) A developer trying to list all messages in a project they don't own.
+       * @principle Restricts message visibility to the project owner and the individual sender.
+       */
+      match /messages/{messageId} {
+        allow get: if isProjectOwner(projectId) || isOwner(resource.data.senderId);
+        allow list: if isProjectOwner(projectId);
+        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        allow update: if isOwner(resource.data.senderId) && resource != null;
+        allow delete: if isOwner(resource.data.senderId) && resource != null;
+      }
+    }
+
+    // --------------------------------------------------------------------------
+    // Collection: applications (Orphaned)
+    // --------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to submission documents.
+     * @path /applications/{applicationId}/submissions/{submissionId}
+     * @allow (all) No operations are permitted.
+     * @deny (all) All operations are denied.
+     * @principle CRITICAL: This path is structurally flawed and insecure. A rule here cannot determine the `projectId` or `companyId`
+     * associated with the application, making it impossible to write safe authorization rules. To fix this, submissions should be
+     * nested under their parent project, e.g., `/projects/{projectId}/applications/{applicationId}/submissions/{submissionId}`.
+     * All access is blocked until the data structure is corrected.
+     */
+    match /applications/{applicationId}/submissions/{submissionId} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // --------------------------------------------------------------------------
+    // Collection: payments
+    // --------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to sensitive payment records.
+     * @path /payments/{paymentId}
+     * @allow (get) The user who is the recipient of the payment (`userId`) viewing their payment record.
+     * @allow (get) The company that owns the associated project (`projectId`) viewing the payment record.
+     * @deny (list) Any user attempting to list all payment records on the platform.
+     * @deny (update, delete) Any user trying to modify or delete an immutable payment record.
+     * @principle Enforces strict, need-to-know access for highly sensitive financial data.
+     */
+    match /payments/{paymentId} {
+      allow get: if isOwner(resource.data.userId) || isProjectOwner(resource.data.projectId);
+      allow list: if false;
+      allow create: if isProjectOwner(request.resource.data.projectId);
+      allow update: if false; // Payment records should be immutable
+      allow delete: if false; // Payment records should be immutable
+    }
+  }
+}
