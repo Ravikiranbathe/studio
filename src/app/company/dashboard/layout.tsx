@@ -34,7 +34,7 @@ export default function CompanyDashboardLayout({
     { name: "Dashboard", href: "/company/dashboard", icon: Home },
     { name: "My Projects", href: "/company/dashboard", icon: Briefcase },
     { name: "Applicants", href: "/company/dashboard", icon: Users },
-    { name: "Post a Project", href: "/company/dashboard", icon: PlusCircle },
+    { name: "Post a Project", href: "/company/dashboard/create-project", icon: PlusCircle },
     { name: "Company Profile", href: "/company/dashboard", icon: User },
     { name: "Settings", href: "/company/dashboard", icon: Settings },
   ]
