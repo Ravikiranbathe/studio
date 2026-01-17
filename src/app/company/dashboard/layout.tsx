@@ -2,11 +2,11 @@ import Link from "next/link"
 import {
   Bell,
   Briefcase,
-  FileText,
+  Users,
   Home,
   LogOut,
   Menu,
-  Search,
+  PlusCircle,
   Settings,
   User,
 } from "lucide-react"
@@ -25,20 +25,21 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { placeHolderImages } from "@/lib/placeholder-images"
 
-export default function DashboardLayout({
+export default function CompanyDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: Home },
-    { name: "Find Projects", href: "/dashboard", icon: Search },
-    { name: "My Proposals", href: "/dashboard", icon: FileText },
-    { name: "Profile", href: "/dashboard", icon: User },
-    { name: "Settings", href: "/dashboard", icon: Settings },
+    { name: "Dashboard", href: "/company/dashboard", icon: Home },
+    { name: "My Projects", href: "/company/dashboard", icon: Briefcase },
+    { name: "Applicants", href: "/company/dashboard", icon: Users },
+    { name: "Post a Project", href: "/company/dashboard", icon: PlusCircle },
+    { name: "Company Profile", href: "/company/dashboard", icon: User },
+    { name: "Settings", href: "/company/dashboard", icon: Settings },
   ]
   
-  const userAvatar = placeHolderImages.find(p => p.id === 'dev-avatar-1')?.imageUrl || '';
+  const userAvatar = placeHolderImages.find(p => p.id === 'company-logo-2')?.imageUrl || '';
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -47,7 +48,7 @@ export default function DashboardLayout({
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Logo className="h-6 w-6 text-primary" />
-              <span className="font-headline">CollabHub</span>
+              <span className="font-headline">CollabHub for Companies</span>
             </Link>
           </div>
           <div className="flex-1">
@@ -66,7 +67,7 @@ export default function DashboardLayout({
           </div>
           <div className="mt-auto p-4">
             <Button size="sm" className="w-full" asChild>
-                <Link href="/login">
+                <Link href="/company/login">
                     <LogOut className="mr-2 h-4 w-4" /> Logout
                 </Link>
             </Button>
@@ -93,7 +94,7 @@ export default function DashboardLayout({
                   className="flex items-center gap-2 text-lg font-semibold mb-4"
                 >
                   <Logo className="h-6 w-6 text-primary" />
-                  <span className="font-headline">CollabHub</span>
+                  <span className="font-headline">CollabHub for Companies</span>
                 </Link>
                 {navItems.map(item => (
                   <Link
@@ -120,18 +121,18 @@ export default function DashboardLayout({
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={userAvatar} />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarFallback>C</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>My Company</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><Link href="/dashboard">Profile</Link></DropdownMenuItem>
-              <DropdownMenuItem asChild><Link href="/dashboard">Settings</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/company/dashboard">Profile</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/company/dashboard">Settings</Link></DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><Link href="/login">Logout</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link href="/company/login">Logout</Link></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

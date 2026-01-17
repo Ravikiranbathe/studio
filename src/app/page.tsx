@@ -5,6 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { placeHolderImages } from "@/lib/placeholder-images";
 import Logo from "@/components/logo";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Home() {
   const heroImage = placeHolderImages.find(p => p.id === 'landing-hero-1');
@@ -41,9 +47,19 @@ export default function Home() {
           <span className="sr-only">CollabHub</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Log In</Link>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost">Log In</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/login">Developer</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/company/login">Company</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Link href="/signup">Sign Up</Link>
           </Button>
