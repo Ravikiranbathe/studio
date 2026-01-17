@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { useFirestore, useUser } from "@/firebase"
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from "@/firebase"
 import { addDoc, collection } from "firebase/firestore"
 
 const projectFormSchema = z.object({
@@ -51,7 +51,7 @@ export default function CreateProjectPage() {
   const { toast } = useToast();
   const router = useRouter();
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const form = useForm<ProjectFormValues>({
@@ -63,8 +63,8 @@ export default function CreateProjectPage() {
     },
   });
 
-  async function onSubmit(data: ProjectFormValues) {
-    if (!firestore || !user) {
+  function onSubmit(data: ProjectFormValues) {
+    if (!firestore || !user || isUserLoading) {
       toast({
         variant: "destructive",
         title: "Authentication Error",
@@ -75,34 +75,37 @@ export default function CreateProjectPage() {
 
     setIsSubmitting(true);
 
-    try {
-      const projectsCollection = collection(firestore, "projects");
-      await addDoc(projectsCollection, {
-        title: data.title,
-        description: data.description,
-        techStack: data.techStack,
-        budget: data.budget,
-        deadline: data.deadline.toISOString(),
-        companyId: user.uid,
-        createdAt: new Date().toISOString(),
-        status: "open",
-      });
+    const projectData = {
+      title: data.title,
+      description: data.description,
+      techStack: data.techStack,
+      budget: data.budget,
+      deadline: data.deadline.toISOString(),
+      companyId: user.uid,
+      createdAt: new Date().toISOString(),
+      status: "open",
+    };
+    const projectsCollection = collection(firestore, "projects");
 
-      toast({
-        title: "Project Created!",
-        description: "Your new project has been successfully posted.",
-      });
-      router.push("/company/dashboard");
-    } catch (error) {
-      console.error("Error creating project:", error);
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem creating your project. Please try again.",
-      });
-    } finally {
+    addDoc(projectsCollection, projectData)
+      .then(() => {
+        toast({
+          title: "Project Created!",
+          description: "Your new project has been successfully posted.",
+        });
+        router.push("/company/dashboard");
+      })
+      .catch(async (error) => {
+        const permissionError = new FirestorePermissionError({
+          path: 'projects',
+          operation: 'create',
+          requestResourceData: projectData,
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      })
+      .finally(() => {
         setIsSubmitting(false);
-    }
+      });
   }
 
   return (
@@ -216,7 +219,7 @@ export default function CreateProjectPage() {
                 )}
               />
             </div>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isUserLoading}>
               {isSubmitting ? 'Posting Project...' : 'Post Project'}
             </Button>
           </form>
