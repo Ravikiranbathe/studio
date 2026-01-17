@@ -1,3 +1,58 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "landing-hero-1",
+      "description": "A collaborative team working on a project in a modern office.",
+      "imageUrl": "https://images.unsplash.com/photo-1543269865-cbf427effbad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx0ZWFtJTIwY29sbGFib3JhdGlvbnxlbnwwfHx8fDE3Njg2NDc5NTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "team collaboration"
+    },
+    {
+      "id": "company-logo-1",
+      "description": "Generic company logo 1",
+      "imageUrl": "https://images.unsplash.com/photo-1549924231-f129b911e442?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjb21wYW55JTIwbG9nb3xlbnwwfHx8fDE3Njg2MTU0MTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "company logo"
+    },
+    {
+      "id": "company-logo-2",
+      "description": "Generic company logo 2",
+      "imageUrl": "https://images.unsplash.com/photo-1760037028517-e5cc6e3ebd3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGxvZ298ZW58MHx8fHwxNzY4NjQ0MTM2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract logo"
+    },
+    {
+      "id": "company-logo-3",
+      "description": "Generic company logo 3",
+      "imageUrl": "https://images.unsplash.com/photo-1605898643907-844c2bfc764e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwbG9nb3xlbnwwfHx8fDE3Njg2NDcwNDB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tech logo"
+    },
+    {
+      "id": "dev-avatar-1",
+      "description": "Avatar for a developer named Alex",
+      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njg2NzM0NjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "dev-avatar-2",
+      "description": "Avatar for a developer named Sarah",
+      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzY4NjYzOTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "dev-avatar-3",
+      "description": "Avatar for a developer named Mike",
+      "imageUrl": "https://images.unsplash.com/photo-1636377985931-898218afd306?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njg1NzI1MTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "submission-thumb-1",
+      "description": "Thumbnail of a design submission",
+      "imageUrl": "https://images.unsplash.com/photo-1576153192396-180ecef2a715?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx1aSUyMGRlc2lnbnxlbnwwfHx8fDE3Njg1ODM3MjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ui design"
+    },
+    {
+      "id": "submission-thumb-2",
+      "description": "Thumbnail of another design submission",
+      "imageUrl": "https://images.unsplash.com/photo-1667271361164-cc0588fa7190?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkYXNoYm9hcmQlMjBkZXNpZ258ZW58MHx8fHwxNzY4NjgwOTgzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dashboard design"
+    }
+  ]
 }
