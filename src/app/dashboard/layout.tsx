@@ -27,9 +27,10 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { placeHolderImages } from "@/lib/placeholder-images"
-import { useAuth, useUser } from "@/firebase"
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { useRouter } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton";
+import { doc } from "firebase/firestore";
 
 
 export default function DashboardLayout({
@@ -40,12 +41,24 @@ export default function DashboardLayout({
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
   React.useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
+    } else if (user && !isProfileLoading && userProfile) {
+      if (userProfile.role !== 'developer') {
+        router.push('/company/login');
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, userProfile, isProfileLoading]);
 
   const handleLogout = () => {
     if (auth) {
@@ -63,7 +76,9 @@ export default function DashboardLayout({
   
   const userAvatar = placeHolderImages.find(p => p.id === 'dev-avatar-1')?.imageUrl || '';
 
-  if (isUserLoading || !user) {
+  const isLoading = isUserLoading || isProfileLoading || !userProfile;
+
+  if (isLoading || !user) {
     return (
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <div className="hidden border-r bg-muted/40 md:block">

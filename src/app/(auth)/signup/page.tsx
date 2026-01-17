@@ -59,15 +59,18 @@ export default function SignupPage() {
         await updateProfile(firebaseUser, { displayName: name });
 
         // Create the user profile document in Firestore
-        const userProfile = {
+        const userProfile: { [key: string]: any } = {
             id: firebaseUser.uid,
             role: role,
             name: name,
             email: email,
             createdAt: new Date().toISOString(),
-            skills: '',
-            portfolioUrl: ''
         };
+
+        if (role === 'developer') {
+            userProfile.skills = '';
+            userProfile.portfolioUrl = '';
+        }
 
         await setDoc(doc(firestore, "users", firebaseUser.uid), userProfile);
 
