@@ -1,3 +1,6 @@
+'use client';
+
+import React from "react";
 import Link from "next/link"
 import {
   Bell,
@@ -24,12 +27,31 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { placeHolderImages } from "@/lib/placeholder-images"
+import { useAuth, useUser } from "@/firebase"
+import { useRouter } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CompanyDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/company/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleLogout = () => {
+    if (auth) {
+      auth.signOut();
+    }
+  };
+
   const navItems = [
     { name: "Dashboard", href: "/company/dashboard", icon: Home },
     { name: "My Projects", href: "/company/dashboard", icon: Briefcase },
@@ -40,6 +62,34 @@ export default function CompanyDashboardLayout({
   ]
   
   const userAvatar = placeHolderImages.find(p => p.id === 'company-logo-2')?.imageUrl || '';
+  
+  if (isUserLoading || !user) {
+    return (
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+        <div className="hidden border-r bg-muted/40 md:block">
+          <div className="flex h-full max-h-screen flex-col gap-2 p-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full mt-4" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full mt-auto" />
+          </div>
+        </div>
+         <div className="flex flex-col">
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <Skeleton className="h-8 w-8 rounded-full md:hidden" />
+            <div className="w-full flex-1" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+          </header>
+          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+             <Skeleton className="h-32 w-full" />
+             <Skeleton className="h-64 w-full" />
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -66,10 +116,8 @@ export default function CompanyDashboardLayout({
             </nav>
           </div>
           <div className="mt-auto p-4">
-            <Button size="sm" className="w-full" asChild>
-                <Link href="/company/login">
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
-                </Link>
+            <Button size="sm" className="w-full" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
           </div>
         </div>
@@ -121,18 +169,18 @@ export default function CompanyDashboardLayout({
               <Button variant="secondary" size="icon" className="rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={userAvatar} />
-                  <AvatarFallback>C</AvatarFallback>
+                  <AvatarFallback>{user.displayName?.charAt(0) || 'C'}</AvatarFallback>
                 </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Company</DropdownMenuLabel>
+              <DropdownMenuLabel>{user.displayName || 'My Company'}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild><Link href="/company/dashboard">Profile</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link href="/company/dashboard">Settings</Link></DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><Link href="/company/login">Logout</Link></DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
