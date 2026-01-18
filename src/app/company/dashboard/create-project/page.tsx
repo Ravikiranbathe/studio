@@ -82,6 +82,7 @@ export default function CreateProjectPage() {
       budget: data.budget,
       deadline: data.deadline.toISOString(),
       companyId: user.uid,
+      companyName: user.displayName || 'Anonymous Company',
       createdAt: new Date().toISOString(),
       status: "open",
     };

@@ -61,6 +61,10 @@
           "type": "string",
           "description": "Reference to Company. (Relationship: Company 1:N Project)"
         },
+        "companyName": {
+          "type": "string",
+          "description": "The name of the company that posted the project."
+        },
         "title": {
           "type": "string",
           "description": "The title of the project."
@@ -91,6 +95,7 @@
       "required": [
         "id",
         "companyId",
+        "companyName",
         "title",
         "description",
         "techStack",

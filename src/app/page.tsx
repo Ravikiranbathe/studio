@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Code, Palette, Rocket } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,33 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import FeaturedProjects from "@/components/featured-projects";
 
 export default function Home() {
   const heroImage = placeHolderImages.find(p => p.id === 'landing-hero-1');
-
-  const featuredProjects = [
-    {
-      id: "1",
-      title: "E-commerce Platform Redesign",
-      company: "Shopify",
-      budget: 8000,
-      skills: ["UI/UX", "React", "Figma"],
-    },
-    {
-      id: "2",
-      title: "Mobile App for Fitness Tracking",
-      company: "Fitbit",
-      budget: 12000,
-      skills: ["React Native", "Firebase", "Node.js"],
-    },
-    {
-      id: "3",
-      title: "Data Visualization Dashboard",
-      company: "DataBricks",
-      budget: 6500,
-      skills: ["D3.js", "Python", "SQL"],
-    },
-  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -152,29 +128,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-3 mt-12">
-              {featuredProjects.map(project => (
-                <Card key={project.id}>
-                  <CardHeader>
-                    <CardTitle>{project.title}</CardTitle>
-                    <CardDescription>{project.company}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="grid gap-2">
-                    <div className="font-semibold">${project.budget.toLocaleString()} Budget</div>
-                    <div className="flex flex-wrap gap-2">
-                      {project.skills.map(skill => (
-                        <div key={skill} className="text-sm px-2 py-1 bg-muted rounded-md">{skill}</div>
-                      ))}
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link href="/login">View Project</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
+            <FeaturedProjects />
           </div>
         </section>
       </main>
