@@ -47,11 +47,12 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
   const { user, isUserLoading } = useUser();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const { id } = params;
 
   const projectRef = useMemoFirebase(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, "projects", params.id);
-  }, [firestore, params.id]);
+    if (!firestore || !id) return null;
+    return doc(firestore, "projects", id);
+  }, [firestore, id]);
   const { data: project, isLoading: projectLoading } = useDoc(projectRef);
 
   const form = useForm<ApplicationFormValues>({
@@ -122,7 +123,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
     setIsSubmitting(true);
 
     const applicationData = {
-      projectId: project.id,
+      projectId: id,
       developerId: user.uid,
       developerName: data.name,
       developerEmail: data.email,
@@ -134,7 +135,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
       submittedAt: new Date().toISOString(),
     };
     
-    const applicationsCollection = collection(firestore, `projects/${project.id}/applications`);
+    const applicationsCollection = collection(firestore, `projects/${id}/applications`);
 
     addDoc(applicationsCollection, applicationData)
       .then(() => {
@@ -146,7 +147,7 @@ export default function ProjectDetailsPage({ params }: { params: { id: string } 
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
-          path: `projects/${project.id}/applications`,
+          path: `projects/${id}/applications`,
           operation: 'create',
           requestResourceData: applicationData,
         });
